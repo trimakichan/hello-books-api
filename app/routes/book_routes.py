@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, make_response, request
+from flask import Blueprint, abort, make_response, request, Response
 from app.models.book import Book
 from ..db import db
 
@@ -20,29 +20,15 @@ def get_all_books():
         )
     return books_response
 
-# @books_bp.get("/<book_id>")
-# def get_one_book(book_id):
-#     book = validate_book(book_id)
+@books_bp.get("/<book_id>")
+def get_one_book(book_id):
+    book = validate_book(book_id)
 
-#     return {
-#         "id": book.id,
-#         "title": book.title,
-#         "description": book.description,
-#     }
-
-# def validate_book(book_id):
-#     try:
-#         book_id = int(book_id)
-#     except ValueError:
-#         response = {"msg": f"book {book_id} invalid"}
-#         abort(make_response(response, 400))
-
-#     for book in books:
-#         if book.id == book_id:
-#             return book
-        
-#     response = {"msg": f"book {book_id} not found"}
-#     abort(make_response(response, 404))
+    return {
+            "id": book.id,
+            "title": book.title,
+            "description": book.description
+    }
 
 @books_bp.post("/")
 def create_book():
@@ -65,3 +51,47 @@ def create_book():
     }
 
     return response, 201
+
+@books_bp.put("/<book_id>")
+def update_book(book_id):
+    book = validate_book(book_id)
+    request_body = request.get_json()
+
+    try:
+        title = request_body["title"]
+        description = request_body["description"]
+    except KeyError:
+        msg = {"message": "please provide a valid title and description."}
+        abort(make_response(msg, 400))
+
+    book.title = title
+    book.description = description
+    db.session.commit()
+
+    return Response(status=204,mimetype="application/json")
+
+@books_bp.delete("/<book_id>")
+def delete_book(book_id):
+    book = validate_book(book_id)
+    db.session.delete(book)
+    db.session.commit()
+    return Response(status=204, mimetype="application/json")
+
+
+def validate_book(book_id):
+
+    try:
+        int(book_id)
+    except ValueError:
+        msg = {"message": f"Book {book_id} invalid."}
+        abort(make_response(msg, 400))
+    
+    query = db.select(Book).where(Book.id == book_id)
+    book = db.session.scalar(query)
+
+    if book is None: # or if not book:
+        msg = {"message": f"Book {book_id} is not found."}
+        abort(make_response(msg, 404))
+
+    return book
+
