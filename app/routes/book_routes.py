@@ -4,9 +4,20 @@ from ..db import db
 
 books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
+# Flask Query
 @books_bp.get("/")
 def get_all_books():
-    query = db.select(Book).order_by(Book.id)
+    title_param = request.args.get("title")
+    query = db.select(Book)
+
+    if title_param:
+        query = query.where(Book.title.ilike(f"%{title_param}%"))
+
+    description_param = request.args.get("description")
+    if description_param:
+        query = query.where(Book.description.ilike(f"%{description_param}%"))
+    
+    query.order_by(Book.id)
     books = db.session.scalars(query)
 
     books_response = []
@@ -23,6 +34,26 @@ def get_all_books():
 @books_bp.get("/<book_id>")
 def get_one_book(book_id):
     book = validate_book(book_id)
+
+# @books_bp.get("/")
+# def get_all_books():
+#     query = db.select(Book).order_by(Book.id)
+#     books = db.session.scalars(query)
+
+#     books_response = []
+#     for book in books:
+#         books_response.append(
+#             {
+#                 "id": book.id,
+#                 "title": book.title,
+#                 "description": book.description
+#             }
+#         )
+#     return books_response
+
+# @books_bp.get("/<book_id>")
+# def get_one_book(book_id):
+#     book = validate_book(book_id)
 
     return {
             "id": book.id,
