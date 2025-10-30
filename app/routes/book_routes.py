@@ -5,7 +5,7 @@ from ..db import db
 books_bp = Blueprint("books_bp", __name__, url_prefix="/books")
 
 # Flask Query
-@books_bp.get("/")
+@books_bp.get("")
 def get_all_books():
     title_param = request.args.get("title")
     query = db.select(Book)
@@ -31,10 +31,6 @@ def get_all_books():
         )
     return books_response
 
-@books_bp.get("/<book_id>")
-def get_one_book(book_id):
-    book = validate_book(book_id)
-
 # @books_bp.get("/")
 # def get_all_books():
 #     query = db.select(Book).order_by(Book.id)
@@ -55,13 +51,17 @@ def get_one_book(book_id):
 # def get_one_book(book_id):
 #     book = validate_book(book_id)
 
+@books_bp.get("/<book_id>")
+def get_one_book(book_id):
+    book = validate_book(book_id)
+
     return {
             "id": book.id,
             "title": book.title,
             "description": book.description
     }
 
-@books_bp.post("/")
+@books_bp.post("")
 def create_book():
     request_body = request.get_json()
     try:
@@ -107,7 +107,6 @@ def delete_book(book_id):
     db.session.delete(book)
     db.session.commit()
     return Response(status=204, mimetype="application/json")
-
 
 def validate_book(book_id):
 
