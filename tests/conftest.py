@@ -2,9 +2,9 @@ import pytest
 from app import create_app
 from app.db import db
 from flask.signals import request_finished
+from app.models.book import Book
 from dotenv import load_dotenv
 import os
-from app.models.book import Book
 
 load_dotenv()
 
@@ -16,6 +16,7 @@ def app():
     }
     app = create_app(test_config)
 
+    # when a request is finished, it will remove everything from the session. 
     @request_finished.connect_via(app)
     def expire_session(sender, response, **extra):
         db.session.remove()
