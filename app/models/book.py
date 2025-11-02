@@ -15,7 +15,7 @@ class Book(db.Model):
 
     @classmethod
     def from_dict(cls, book_data):
-        new_book = Book(
+        new_book = cls(
                         title=book_data["title"],
                         description=book_data["description"])
 
