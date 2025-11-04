@@ -18,7 +18,7 @@ def create_book_with_author(author_id):
     request_body = request.get_json()
     request_body["author_id"] = author.id
 
-    return create_model(Author, request_body)
+    return create_model(Book, request_body)
 
 
 @bp.get("")

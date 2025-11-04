@@ -6,6 +6,7 @@ from ..db import db
 
 if TYPE_CHECKING:
     from .author import Author
+    
 class Book(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title: Mapped[str]
